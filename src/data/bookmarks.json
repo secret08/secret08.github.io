@@ -1,18 +1,12 @@
 {
   "categories": [
-    "开发",
+    "AI与服务器",
     "工具",
     "学习",
     "投资",
     "生活"
   ],
   "items": [
-    {
-      "title": "Astro 文档",
-      "url": "https://docs.astro.build",
-      "desc": "静态站点框架官方文档，本站的构建工具",
-      "cat": "开发"
-    },
     {
       "title": "Cloudflare Dashboard",
       "url": "https://dash.cloudflare.com",
