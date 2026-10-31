@@ -10,15 +10,74 @@
           "key": "Cache-Control",
           "value": "no-store, no-cache, must-revalidate, private, max-age=0"
         },
-        { "key": "CDN-Cache-Control", "value": "no-store" },
-        { "key": "Pragma", "value": "no-cache" }
+        {
+          "key": "CDN-Cache-Control",
+          "value": "no-store"
+        },
+        {
+          "key": "Pragma",
+          "value": "no-cache"
+        }
+      ]
+    },
+    {
+      "source": "/",
+      "headers": [
+        {
+          "key": "Cache-Control",
+          "value": "public, max-age=0, must-revalidate"
+        }
+      ]
+    },
+    {
+      "source": "/index.html",
+      "headers": [
+        {
+          "key": "Cache-Control",
+          "value": "public, max-age=0, must-revalidate"
+        }
+      ]
+    },
+    {
+      "source": "/blog/",
+      "headers": [
+        {
+          "key": "Cache-Control",
+          "value": "public, max-age=0, must-revalidate"
+        }
+      ]
+    },
+    {
+      "source": "/notes/",
+      "headers": [
+        {
+          "key": "Cache-Control",
+          "value": "public, max-age=0, must-revalidate"
+        }
       ]
     }
   ],
-  "caches": [{ "source": "/vault.enc", "cacheTtl": 0 }],
+  "caches": [
+    {
+      "source": "/vault.enc",
+      "cacheTtl": 0
+    }
+  ],
   "redirects": [
-    { "source": "/vault/", "destination": "/#vault", "statusCode": 301 },
-    { "source": "/vault", "destination": "/#vault", "statusCode": 301 },
-    { "source": "/vault/index.html", "destination": "/#vault", "statusCode": 301 }
+    {
+      "source": "/vault/",
+      "destination": "/#vault",
+      "statusCode": 301
+    },
+    {
+      "source": "/vault",
+      "destination": "/#vault",
+      "statusCode": 301
+    },
+    {
+      "source": "/vault/index.html",
+      "destination": "/#vault",
+      "statusCode": 301
+    }
   ]
 }
