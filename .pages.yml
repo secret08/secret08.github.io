@@ -55,7 +55,7 @@ content:
     type: collection
     path: src/content/notes
     filename:
-      template: '{year}-{month}-{day}-{fields.date}'
+      template: '{fields.date}'
       sanitize: true
     view:
       fields: [date, mood]
