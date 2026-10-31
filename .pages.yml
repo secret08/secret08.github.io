@@ -13,7 +13,7 @@ content:
     type: collection
     path: src/content/blog
     filename:
-      template: '{fields.title}'
+      template: '{fields.title}.md'
       sanitize: true
     view:
       fields: [title, date, draft]
@@ -55,7 +55,7 @@ content:
     type: collection
     path: src/content/notes
     filename:
-      template: '{fields.date}'
+      template: '{fields.date}.md'
       sanitize: true
     view:
       fields: [date, mood]
