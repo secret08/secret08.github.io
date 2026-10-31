@@ -4,62 +4,21 @@
     "工具",
     "学习",
     "投资",
-    "生活"
+    "生活",
+    "娱乐"
   ],
   "items": [
     {
       "title": "Cloudflare Dashboard",
       "url": "https://dash.cloudflare.com",
       "desc": "域名解析、Workers、R2 控制台",
-      "cat": "开发"
+      "cat": "AI与服务器"
     },
     {
       "title": "EdgeOne 控制台",
       "url": "https://console.cloud.tencent.com/edgeone",
       "desc": "腾讯边缘加速与 Pages 部署",
-      "cat": "开发"
-    },
-    {
-      "title": "Python 文档",
-      "url": "https://docs.python.org/zh-cn/3/",
-      "desc": "中文官方文档，查标准库最靠谱",
-      "cat": "开发"
-    },
-    {
-      "title": "MDN Web Docs",
-      "url": "https://developer.mozilla.org/zh-CN/",
-      "desc": "WebCrypto、Fetch 这些 API 的权威参考",
-      "cat": "开发"
-    },
-    {
-      "title": "Excalidraw",
-      "url": "https://excalidraw.com",
-      "desc": "手绘风白板，画架构图很快",
-      "cat": "工具"
-    },
-    {
-      "title": "Squoosh",
-      "url": "https://squoosh.app",
-      "desc": "在线图片压缩转 webp，写文章配图必备",
-      "cat": "工具"
-    },
-    {
-      "title": "TinyPNG",
-      "url": "https://tinypng.com",
-      "desc": "PNG/JPG 批量压缩",
-      "cat": "工具"
-    },
-    {
-      "title": "Regex101",
-      "url": "https://regex101.com",
-      "desc": "正则调试，带逐步解释",
-      "cat": "工具"
-    },
-    {
-      "title": "crontab.guru",
-      "url": "https://crontab.guru",
-      "desc": "定时任务表达式速查",
-      "cat": "工具"
+      "cat": "AI与服务器"
     },
     {
       "title": "IT 狗",
@@ -71,19 +30,7 @@
       "title": "YouTube",
       "url": "https://www.youtube.com",
       "desc": "技术演讲与英语听力素材",
-      "cat": "学习"
-    },
-    {
-      "title": "Hacker News",
-      "url": "https://news.ycombinator.com",
-      "desc": "技术圈信息源，英文阅读练习",
-      "cat": "学习"
-    },
-    {
-      "title": "阮一峰的网络日志",
-      "url": "https://www.ruanyifeng.com/blog/",
-      "desc": "每周科技动态，中文技术写作范本",
-      "cat": "学习"
+      "cat": "娱乐"
     },
     {
       "title": "雪球",
@@ -96,24 +43,6 @@
       "url": "https://www.jisilu.cn",
       "desc": "低风险投资数据，可转债与打新",
       "cat": "投资"
-    },
-    {
-      "title": "东方财富",
-      "url": "https://www.eastmoney.com",
-      "desc": "行情与基金数据",
-      "cat": "投资"
-    },
-    {
-      "title": "下厨房",
-      "url": "https://www.xiachufang.com",
-      "desc": "做饭查菜谱",
-      "cat": "生活"
-    },
-    {
-      "title": "什么值得买",
-      "url": "https://www.smzdm.com",
-      "desc": "买东西前比价",
-      "cat": "生活"
     }
   ]
 }
