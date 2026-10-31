@@ -1,12 +1,12 @@
 {
-  "categories": ["开发", "工具", "学习", "投资", "生活"],
+  "categories": [
+    "开发",
+    "工具",
+    "学习",
+    "投资",
+    "生活"
+  ],
   "items": [
-    {
-      "title": "GitHub",
-      "url": "https://github.com",
-      "desc": "代码托管与私有仓库，本站的内容源就在这",
-      "cat": "开发"
-    },
     {
       "title": "Astro 文档",
       "url": "https://docs.astro.build",
@@ -41,8 +41,7 @@
       "title": "Excalidraw",
       "url": "https://excalidraw.com",
       "desc": "手绘风白板，画架构图很快",
-      "cat": "工具",
-      "star": true
+      "cat": "工具"
     },
     {
       "title": "Squoosh",
