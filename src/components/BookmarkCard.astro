@@ -1,0 +1,36 @@
+---
+interface Props {
+  title: string;
+  url: string;
+  desc?: string;
+  cat?: string;
+}
+
+const { title, url, desc, cat } = Astro.props;
+
+let host = url;
+try {
+  host = new URL(url).hostname.replace(/^www\./, '');
+} catch {
+  host = url;
+}
+
+const initial = title.trim().charAt(0).toUpperCase();
+const searchText = `${title} ${desc ?? ''} ${host}`.toLowerCase();
+---
+
+<a
+  class="bm"
+  href={url}
+  target="_blank"
+  rel="noopener noreferrer"
+  data-cat={cat}
+  data-search={searchText}
+>
+  <div class="bm-icon">{initial}</div>
+  <div class="bm-body">
+    <p class="bm-title">{title}</p>
+    {desc && <p class="bm-desc">{desc}</p>}
+    <span class="bm-host">{host}</span>
+  </div>
+</a>

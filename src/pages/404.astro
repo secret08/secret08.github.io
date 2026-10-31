@@ -1,0 +1,17 @@
+---
+import Base from '../layouts/Base.astro';
+---
+
+<Base title="页面不存在">
+  <h1 class="page-title">404</h1>
+  <p class="page-desc">这个地址没有内容，可能是链接写错了或者页面已经挪走。</p>
+  <p><a href="/" style="color:var(--accent)">回首页</a></p>
+</Base>
+
+<script is:inline>
+  (function () {
+    var p = location.pathname.replace(/\/+$/, '');
+    // 收藏区已改为首页内联分区，兜住旧链接与搜索引擎里的旧地址
+    if (p === '/vault' || p === '/vault/index.html') location.replace('/#vault');
+  })();
+</script>

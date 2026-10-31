@@ -1,0 +1,465 @@
+---
+import Base from '../layouts/Base.astro';
+import BookmarkCard from '../components/BookmarkCard.astro';
+import data from '../data/bookmarks.json';
+
+const { categories, items } = data;
+
+// 给前端搜索建议用的精简书签数据
+const suggestItems = items.map((it) => {
+  let host = it.url;
+  try {
+    host = new URL(it.url).hostname.replace(/^www\./, '');
+  } catch {
+    host = it.url;
+  }
+  return {
+    t: it.title,
+    u: it.url,
+    h: host,
+    d: (it.desc ?? '').toLowerCase(),
+    s: `${it.title} ${it.desc ?? ''} ${host}`.toLowerCase(),
+  };
+});
+---
+
+<Base title="导航" active="home">
+  <div class="toolbar">
+    <div class="chips" role="group" aria-label="分类筛选">
+      <button class="chip is-active" type="button" data-cat="all">全部</button>
+      {categories.map((cat) => <button class="chip" type="button" data-cat={cat}>{cat}</button>)}
+    </div>
+  </div>
+
+  <form class="searchbar" role="search" id="omni" autocomplete="off">
+    <div class="search-wrap">
+      <input
+        class="search"
+        type="search"
+        id="omni-input"
+        placeholder="搜一下，或用必应搜索"
+        aria-label="搜索"
+        role="combobox"
+        aria-autocomplete="list"
+        aria-expanded="false"
+        aria-controls="omni-list"
+      />
+      <div class="suggest" id="omni-list" role="listbox" aria-label="搜索建议" hidden></div>
+    </div>
+    <button class="engine" type="button" data-engine="bing">必应</button>
+    <button class="engine" type="button" data-engine="google">谷歌</button>
+  </form>
+
+  <div class="grid" id="bm-grid">
+    {items.map((item) => <BookmarkCard title={item.title} url={item.url} desc={item.desc} cat={item.cat} />)}
+  </div>
+
+  <p class="empty" id="bm-empty" hidden>没有匹配的站点。</p>
+
+  <div class="section-title">其他</div>
+  <div class="grid">
+    <a class="bm" href="/blog/">
+      <div class="bm-icon">✎</div>
+      <div class="bm-body">
+        <p class="bm-title">博客</p>
+        <p class="bm-desc">长文章和记录</p>
+        <span class="bm-host">/blog</span>
+      </div>
+    </a>
+    <a class="bm" href="/notes/">
+      <div class="bm-icon">·</div>
+      <div class="bm-body">
+        <p class="bm-title">说说</p>
+        <p class="bm-desc">一句话的心情与碎片</p>
+        <span class="bm-host">/notes</span>
+      </div>
+    </a>
+  </div>
+
+  {/* 晨光：解锁前只有一张入口卡，解锁后就地铺开。放在 #bm-grid 之外，不参与筛选 / 搜索 */}
+  {/* 预判脚本须在 <section> 之前：只有本地存过钥匙时才隐藏入口卡，无 key 的访客零 JS 依赖 */}
+  <script is:inline>
+    try {
+      if (localStorage.getItem('vault-key')) {
+        document.documentElement.dataset.vaultReady = 'pending';
+        setTimeout(function () {
+          if (!document.documentElement.dataset.vaultBoot) {
+            delete document.documentElement.dataset.vaultReady;
+          }
+        }, 4000);
+      }
+    } catch (e) {}
+  </script>
+
+  <section class="vault-section" id="vault" aria-labelledby="vault-heading">
+    <h2 class="section-title" id="vault-heading" tabindex="-1">晨光</h2>
+
+    <div data-vault-locked>
+      <div class="grid">
+        <button
+          class="bm bm-open"
+          type="button"
+          data-vault-open
+          aria-expanded="false"
+          aria-controls="vault-panel"
+        >
+          <span class="bm-icon" aria-hidden="true">☀️</span>
+          <span class="bm-body">
+            <span class="bm-title">晨光</span>
+          </span>
+        </button>
+      </div>
+
+      <form
+        class="vault-panel"
+        id="vault-panel"
+        data-vault-panel
+        autocomplete="off"
+        hidden
+        novalidate
+      >
+        <input
+          class="vault-input"
+          id="vault-pwd"
+          name="vault-pass"
+          type="password"
+          placeholder="密码"
+          aria-label="密码"
+          autocomplete="new-password"
+          autocapitalize="off"
+          autocorrect="off"
+          spellcheck="false"
+          enterkeyhint="go"
+          required
+        />
+        <button class="btn" type="submit" data-vault-submit>解锁</button>
+        <button class="link-btn" type="button" data-vault-cancel>取消</button>
+        <p class="vault-msg" data-vault-msg role="status" aria-live="polite"></p>
+      </form>
+    </div>
+
+    <div data-vault-unlocked hidden>
+      <div class="locked-bar">
+        <span data-vault-count>已解锁</span>
+        <button class="link-btn" type="button" data-vault-lock>重新锁定</button>
+      </div>
+      <div class="grid" data-vault-grid></div>
+    </div>
+
+  </section>
+
+  <script type="application/json" id="omni-data" set:html={JSON.stringify(suggestItems)} />
+</Base>
+
+<script>
+  import { mountVault } from '../lib/vault-client';
+  mountVault();
+</script>
+
+<script is:inline>
+  (() => {
+    const form = document.getElementById('omni');
+    const input = document.getElementById('omni-input');
+    const list = document.getElementById('omni-list');
+    const dataEl = document.getElementById('omni-data');
+    const grid = document.getElementById('bm-grid');
+    const empty = document.getElementById('bm-empty');
+    const chips = Array.from(document.querySelectorAll('.chip'));
+    if (!form || !input || !list) return;
+
+    const BOOKMARKS = dataEl ? JSON.parse(dataEl.textContent || '[]') : [];
+
+    const ENGINES = {
+      bing: { label: '必应', base: 'https://www.bing.com/search?q=' },
+      google: { label: '谷歌', base: 'https://www.google.com/search?q=' },
+    };
+
+    const store = {
+      get(key, fallback) {
+        try {
+          const raw = localStorage.getItem(key);
+          return raw === null ? fallback : JSON.parse(raw);
+        } catch {
+          return fallback;
+        }
+      },
+      set(key, value) {
+        try {
+          localStorage.setItem(key, JSON.stringify(value));
+        } catch {}
+      },
+    };
+
+    let engine = ENGINES[store.get('omni.engine', 'bing')] ? store.get('omni.engine', 'bing') : 'bing';
+    let history = Array.isArray(store.get('omni.history', [])) ? store.get('omni.history', []) : [];
+    let rows = [];
+    let active = -1;
+
+    const remember = (q) => {
+      history = [q, ...history.filter((x) => x !== q)].slice(0, 12);
+      store.set('omni.history', history);
+    };
+
+    const syncPlaceholder = () => {
+      input.placeholder = `搜一下，或用${ENGINES[engine].label}搜索`;
+    };
+
+    // 判断「这串东西是不是网址」。放得比浏览器宽松一点，命中就直接开，不搜
+    const normalizeUrl = (raw) => {
+      const s = (raw || '').trim();
+      if (!s || /\s/.test(s)) return null;
+      if (/^(https?|ftp|file):\/\//i.test(s)) return s;
+      // 域名：a.b.cc / 带端口 / 带路径查询锚点
+      if (/^([a-z0-9-]+\.)+[a-z]{2,}(:\d+)?([/?#].*)?$/i.test(s)) return `https://${s}`;
+      // 纯 IP
+      if (/^(\d{1,3}\.){3}\d{1,3}(:\d+)?([/?#].*)?$/.test(s)) return `http://${s}`;
+      // 本地调试
+      if (/^localhost(:\d+)?([/?#].*)?$/i.test(s)) return `http://${s}`;
+      return null;
+    };
+
+    const search = (raw, key) => {
+      const kw = (raw ?? input.value).trim();
+      if (!kw) return;
+      remember(kw);
+      location.href = ENGINES[key].base + encodeURIComponent(kw);
+    };
+
+    const open = (url, blank) => {
+      if (blank) window.open(url, '_blank', 'noopener');
+      else location.href = url;
+    };
+
+    /* ---------- 建议列表 ---------- */
+    // 像地址栏那样按「匹配程度」排序：前缀匹配优先，描述里出现的排最后
+    const score = (b, ql) => {
+      const title = b.t.toLowerCase();
+      const host = b.h.toLowerCase();
+      const label = host.split('.')[0];
+      const words = title.split(/[\s\-_:：·|]+/);
+      if (title.startsWith(ql)) return 100;
+      if (label.startsWith(ql)) return 95;
+      if (host.startsWith(ql)) return 90;
+      if (words.some((w) => w.startsWith(ql))) return 80;
+      if (title.includes(ql)) return 55;
+      if (host.includes(ql)) return 45;
+      if (b.d.includes(ql)) return 30;
+      return 0;
+    };
+
+    const matchSites = (ql) => {
+      // 单字输入只认前缀，否则一个字母会命中一大片
+      const floor = ql.length === 1 ? 80 : 1;
+      return BOOKMARKS.map((b) => ({ b, s: score(b, ql) }))
+        .filter((x) => x.s >= floor)
+        .sort((x, y) => y.s - x.s)
+        .slice(0, 5)
+        .map((x) => x.b);
+    };
+
+    const build = (raw) => {
+      const q = raw.trim();
+      const ql = q.toLowerCase();
+      const out = [];
+
+      // 空输入不弹任何东西（一进页面就糊一片「最近搜索」很烦人）
+      if (!ql) return out;
+
+      const url = normalizeUrl(q);
+      if (url) out.push({ type: 'go', title: q, hint: '打开网址', url });
+
+      matchSites(ql).forEach((b) => out.push({ type: 'site', title: b.t, hint: b.h, url: b.u }));
+
+      history
+        .filter((h) => h !== q && h.toLowerCase().includes(ql))
+        .slice(0, 3)
+        .forEach((h) => out.push({ type: 'hist', title: h, hint: '搜索历史' }));
+
+      out.push({ type: 'search', title: q, hint: `用${ENGINES[engine].label}搜索` });
+      return out;
+    };
+
+    const close = () => {
+      list.hidden = true;
+      list.textContent = '';
+      rows = [];
+      active = -1;
+      input.setAttribute('aria-expanded', 'false');
+    };
+
+    const render = () => {
+      list.textContent = '';
+      if (!rows.length) {
+        close();
+        return;
+      }
+      rows.forEach((row, i) => {
+        const el = document.createElement('div');
+        el.className = 'sg' + (i === active ? ' is-active' : '');
+        el.setAttribute('role', 'option');
+        el.setAttribute('aria-selected', i === active ? 'true' : 'false');
+        el.dataset.index = String(i);
+
+        const icon = document.createElement('span');
+        icon.className = 'sg-icon';
+        icon.textContent =
+          row.type === 'site'
+            ? (row.title.trim().charAt(0) || '·').toUpperCase()
+            : row.type === 'go'
+              ? '↗'
+              : row.type === 'hist'
+                ? '↺'
+                : '⌕';
+
+        const main = document.createElement('span');
+        main.className = 'sg-main';
+        main.textContent = row.type === 'search' ? `搜索「${row.title}」` : row.title;
+
+        const hint = document.createElement('span');
+        hint.className = 'sg-hint';
+        hint.textContent = row.hint || '';
+
+        el.append(icon, main, hint);
+        el.addEventListener('mousedown', (e) => e.preventDefault());
+        el.addEventListener('click', () => activate(i));
+        el.addEventListener('mouseenter', () => {
+          active = i;
+          rows.forEach((_, idx) => {
+            const node = list.children[idx];
+            if (node) node.classList.toggle('is-active', idx === i);
+          });
+        });
+        list.appendChild(el);
+      });
+      list.hidden = false;
+      input.setAttribute('aria-expanded', 'true');
+    };
+
+    const update = () => {
+      rows = build(input.value);
+      // 像网址的时候默认选中第一条（打开网址），回车就直达，不用再按方向键
+      active = rows.length && rows[0].type === 'go' ? 0 : -1;
+      if (!rows.length) {
+        close();
+        return;
+      }
+      render();
+    };
+
+    const activate = (i) => {
+      const row = rows[i];
+      if (!row) return;
+      if (row.type === 'site') open(row.url, true);
+      else if (row.type === 'go') open(row.url, false);
+      else search(row.title, engine);
+      close();
+    };
+
+    const submit = () => {
+      const q = input.value.trim();
+      if (!q) {
+        input.focus();
+        update();
+        return;
+      }
+      const url = normalizeUrl(q);
+      if (url) open(url, false);
+      else search(q, engine);
+      close();
+    };
+
+    /* ---------- 站点过滤（保留原有筛选） ---------- */
+    const cards = grid ? Array.from(grid.querySelectorAll('.bm')) : [];
+    let cat = 'all';
+
+    const applyFilter = () => {
+      if (!cards.length) return;
+      const q = input.value.trim().toLowerCase();
+      let shown = 0;
+      cards.forEach((el) => {
+        const okCat = cat === 'all' || el.dataset.cat === cat;
+        const okQ = !q || (el.dataset.search || '').includes(q);
+        const show = okCat && okQ;
+        el.style.display = show ? '' : 'none';
+        if (show) shown += 1;
+      });
+      if (empty) empty.hidden = shown > 0;
+    };
+
+    chips.forEach((chip) => {
+      chip.addEventListener('click', () => {
+        chips.forEach((c) => c.classList.remove('is-active'));
+        chip.classList.add('is-active');
+        cat = chip.dataset.cat || 'all';
+        applyFilter();
+      });
+    });
+
+    /* ---------- 事件 ---------- */
+    input.addEventListener('input', () => {
+      update();
+      applyFilter();
+    });
+
+    input.addEventListener('keydown', (e) => {
+      if (e.isComposing) return;
+      if (e.key === 'ArrowDown') {
+        e.preventDefault();
+        if (!rows.length) update();
+        if (rows.length) {
+          active = (active + 1) % rows.length;
+          render();
+        }
+      } else if (e.key === 'ArrowUp') {
+        e.preventDefault();
+        if (rows.length) {
+          active = (active - 1 + rows.length) % rows.length;
+          render();
+        }
+      } else if (e.key === 'Enter') {
+        e.preventDefault();
+        if (e.shiftKey || active < 0) submit();
+        else activate(active);
+      } else if (e.key === 'Escape') {
+        close();
+      }
+    });
+
+    form.addEventListener('submit', (e) => {
+      e.preventDefault();
+      submit();
+    });
+
+    document.querySelectorAll('.engine').forEach((btn) => {
+      btn.addEventListener('click', () => {
+        const key = btn.dataset.engine;
+        engine = ENGINES[key] ? key : 'bing';
+        store.set('omni.engine', engine);
+        syncPlaceholder();
+        if (!input.value.trim()) {
+          input.focus();
+          update();
+          return;
+        }
+        search(input.value, engine);
+      });
+    });
+
+    document.addEventListener('click', (e) => {
+      if (!form.contains(e.target)) close();
+    });
+
+    document.addEventListener('keydown', (e) => {
+      if (e.key === '/' && document.activeElement !== input && !e.metaKey && !e.ctrlKey) {
+        e.preventDefault();
+        input.focus();
+      }
+    });
+
+    syncPlaceholder();
+    applyFilter();
+
+    // 桌面端直接聚焦，手机上不弹键盘
+    if (window.matchMedia('(hover: hover) and (pointer: fine)').matches) input.focus();
+  })();
+</script>

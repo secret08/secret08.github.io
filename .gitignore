@@ -1,0 +1,10 @@
+node_modules/
+dist/
+.astro/
+.shots/
+.DS_Store
+*.log
+.env
+.env.*
+# 收藏明文只在本地存在，绝不入库
+vault.plain.json

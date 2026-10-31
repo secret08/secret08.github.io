@@ -1,0 +1,45 @@
+---
+import { SITE } from '../config';
+
+interface Props {
+  active?: 'home' | 'blog' | 'notes';
+}
+const { active } = Astro.props;
+
+const links = [
+  { href: '/', label: '导航', key: 'home' },
+  { href: '/blog/', label: '博客', key: 'blog' },
+  { href: '/notes/', label: '说说', key: 'notes' },
+];
+---
+
+<header class="site-header">
+  <div class="wrap">
+    <a href="/" class="brand">{SITE.author}<span class="brand-dot">.</span></a>
+    <nav class="nav">
+      {
+        links.map((link) => (
+          <a href={link.href} aria-current={active === link.key ? 'page' : undefined}>
+            {link.label}
+          </a>
+        ))
+      }
+    </nav>
+    <button class="theme-toggle" type="button" aria-label="切换主题" data-theme-toggle>◐</button>
+  </div>
+</header>
+
+<script is:inline>
+  (() => {
+    const btn = document.querySelector('[data-theme-toggle]');
+    if (!btn) return;
+    btn.addEventListener('click', () => {
+      const root = document.documentElement;
+      const next = root.dataset.theme === 'dark' ? 'light' : 'dark';
+      root.dataset.theme = next;
+      try {
+        localStorage.setItem('theme', next);
+      } catch {}
+    });
+  })();
+</script>

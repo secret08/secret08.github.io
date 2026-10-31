@@ -1,0 +1,113 @@
+# Pages CMS 配置（https://app.pagescms.org）
+# 用 GitHub 账号登录后，它会读这个文件自动生成后台表单。
+# 改完内容会直接 commit 到仓库，触发自动构建。
+
+media:
+  input: public/images
+  output: /images
+  categories: [image]
+
+content:
+  - name: blog
+    label: 博客文章
+    type: collection
+    path: src/content/blog
+    filename:
+      template: '{fields.title}'
+      sanitize: true
+    view:
+      fields: [title, date, draft]
+      primary: title
+      sort: [date, desc]
+    fields:
+      - name: title
+        label: 标题
+        type: string
+        required: true
+      - name: date
+        label: 日期
+        type: date
+        required: true
+        options:
+          format: yyyy-MM-dd
+      - name: summary
+        label: 摘要
+        type: text
+        description: 列表页展示的一句话简介，也用于 SEO 描述
+      - name: tags
+        label: 标签
+        type: string
+        list: true
+      - name: draft
+        label: 草稿
+        type: boolean
+        default: false
+        description: 勾选后不会出现在线上
+      - name: body
+        label: 正文
+        type: rich-text
+        options:
+          format: markdown
+          media: image
+
+  - name: notes
+    label: 说说
+    type: collection
+    path: src/content/notes
+    filename:
+      template: '{year}-{month}-{day}-{fields.date}'
+      sanitize: true
+    view:
+      fields: [date, mood]
+      primary: date
+      sort: [date, desc]
+    fields:
+      - name: date
+        label: 日期
+        type: date
+        required: true
+        options:
+          format: yyyy-MM-dd
+      - name: mood
+        label: 心情
+        type: string
+        description: 一个词就够，比如「清醒」「专注」
+      - name: tags
+        label: 标签
+        type: string
+        list: true
+      - name: body
+        label: 内容
+        type: rich-text
+        options:
+          format: markdown
+
+  - name: bookmarks
+    label: 公开书签
+    type: file
+    path: src/data/bookmarks.json
+    format: json
+    fields:
+      - name: categories
+        label: 分类
+        type: string
+        list: true
+      - name: items
+        label: 站点
+        type: object
+        list: true
+        fields:
+          - name: title
+            label: 名称
+            type: string
+            required: true
+          - name: url
+            label: 网址
+            type: string
+            required: true
+          - name: desc
+            label: 描述
+            type: text
+          - name: cat
+            label: 分类
+            type: string

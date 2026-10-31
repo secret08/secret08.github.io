@@ -1,0 +1,47 @@
+---
+import { getCollection, render } from 'astro:content';
+import Base from '../../layouts/Base.astro';
+
+const WEEK = ['周日', '周一', '周二', '周三', '周四', '周五', '周六'];
+const pad = (n: number) => String(n).padStart(2, '0');
+
+const collected = (await getCollection('notes')).sort(
+  (a, b) => b.data.date.valueOf() - a.data.date.valueOf()
+);
+
+const notes = await Promise.all(
+  collected.map(async (note) => ({
+    note,
+    Content: (await render(note)).Content,
+  }))
+);
+
+const fmt = (d: Date) => `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`;
+---
+
+<Base title="说说" active="notes">
+  <h1 class="page-title">说说</h1>
+  <p class="page-desc">碎片、心情、没什么好展开的念头。共 {notes.length} 条。</p>
+
+  {
+    notes.length === 0 ? (
+      <p class="empty">还没有内容。</p>
+    ) : (
+      <div class="timeline">
+        {notes.map(({ note, Content }) => (
+          <div class="note">
+            <div class="note-date">
+              <time datetime={note.data.date.toISOString()}>
+                {fmt(note.data.date)} {WEEK[note.data.date.getDay()]}
+              </time>
+              {note.data.mood && <span class="mood">{note.data.mood}</span>}
+            </div>
+            <div class="note-body">
+              <Content />
+            </div>
+          </div>
+        ))}
+      </div>
+    )
+  }
+</Base>
